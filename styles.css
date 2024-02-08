@@ -1,0 +1,78 @@
+/* NOTE: all colors are to be redone, named colors are placeholder */
+* {
+	box-sizing: border-box;
+	font-family: Helvetica, sans-serif;
+}
+body, h1, p, canvas {
+	margin: 0;
+	border: none;
+	padding: 0;
+}
+body {
+	background: darkgray;
+	width: 100vw;
+	height: 100vh;
+}
+canvas {
+	height: 92vh;
+	width: 100vw;
+
+	background-color: black;
+	
+	position: absolute;
+	left: 0;
+	top: 8vh;
+	z-index: -1
+}
+h1 {
+	font-size: 1.9em;
+	padding: 6px;
+}
+header {
+	display: flex;
+	height: 8vh;
+}
+header > * {
+	outline: 3px black solid;
+}
+header > p {
+	flex: 1;
+
+	text-align: center;
+	text-decoration: underline;
+}
+.control {
+	font-size: 2em;
+}
+.invisible {
+	display: none;
+}
+#controls {
+
+	background: #ffffff55;
+
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	z-index: 1;
+}
+#back {
+	padding: 6px;
+	color: blue;
+	font-size: 1.5em;
+}
+#easy {
+	background: green;
+}
+#medium {
+	background: yellow;
+}
+#hard {
+	background: red;
+}
+#custom {
+	background: purple;
+}
+#restart {
+	background: midnightblue;
+}
