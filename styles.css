@@ -9,7 +9,8 @@ body, h1, p, canvas {
 	padding: 0;
 }
 body {
-	background: darkgray;
+	background: black;
+	color: white;
 	width: 100vw;
 	height: 100vh;
 }
@@ -42,6 +43,7 @@ header > p {
 	text-decoration: underline;
 }
 .control {
+	color: black;
 	font-size: 2em;
 }
 .invisible {
