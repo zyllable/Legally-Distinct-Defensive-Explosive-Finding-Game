@@ -15,10 +15,10 @@ body {
 	height: 100vh;
 }
 canvas {
-	height: 92vh;
+	height: 91vh;
 	width: 100vw;
 
-	background-color: black;
+	background-color: rgb(141, 141, 141);
 	
 	position: absolute;
 	left: 0;
