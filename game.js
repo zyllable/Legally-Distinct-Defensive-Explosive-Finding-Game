@@ -6,6 +6,13 @@ const getRandomInt = (max, min = 0) => {
 	const delta = max - min;
 	return Math.round(Math.random() * delta + min);
 }
+const create2dArray = (x, y) => {
+	let array = []
+	for (let i = 0; i < x; i++) {
+		array.push(new Array(y));
+	}
+	return array;
+}
 
 class Game {
 	constructor (height, width, mines) {
@@ -15,15 +22,17 @@ class Game {
 	}
 }
 
-const easyGame = new Game(20, 20, 15);
-const mediumGame = new Game(50, 50, 40);
-const hardGame = new Game(100, 100, 100);
+let canvas;
+
+const spriteSheet = new Image();
+spriteSheet.src = "./sprites.png";
+
+const easyGame = new Game(20, 20, 30);
+const mediumGame = new Game(50, 50, 80);
+const hardGame = new Game(100, 100, 200);
 
 let createGame = (game) => {
-	let columns = []
-	for (let i = 0; i < game.width; i++) {
-		columns.push(new Array(game.height));
-	}
+	let columns = create2dArray(game.width, game.height)
 
 	//lay mines
 	let i = 0
@@ -44,15 +53,14 @@ let createGame = (game) => {
 			if (columns[column][row] == -1) {
 				for (let dx = -1; dx < 2; dx++) {
 					let x = column + dx;
-					console.log(x, columns[x])
 					if (x == -1 || x == game.width) {
-						break;
+						continue;
 					}
 
 					for (let dy = -1; dy < 2; dy++) {
 						let y = row + dy;
 						if (y == -1 || y == game.height) {
-							break;
+							continue;
 						}
 
 						if (columns[x][y] != -1) {
@@ -71,7 +79,41 @@ let createGame = (game) => {
 	return columns;
 }
 
-let playGame = (game, context) => {
+let drawGame = (knownGame, context) => {
+	context.clearRect(0, 0, context.width, context.height);
+	for (let column = 0; column < knownGame.length; column++) {
+		for (let row = 0; row < knownGame[0].length; row++) {
+			context.strokeRect(column * 20, row * 20, 20, 20);
+			let tile = knownGame[column][row];
+			if (!tile) {
+				context.fillRect(column * 20, row * 20, 20, 20);
+			} else if (tile > 0) {
+				context.drawImage(spriteSheet, (knownGame[column][row] - 1) * 256, 0, 256, 256, column * 20, row * 20, 20, 20)
+			} else if (tile == -1) {
+				context.drawImage(spriteSheet, 2304, 0, 256, 256, column * 20, row * 20, 20, 20)
+			}
+		}
+	}
+	requestAnimationFrame(() => {drawGame(knownGame, context)});
+}
+
+let playGame = (gameType, context) => {
+	context.strokeStyle = "darkgray";
+	context.fillStyle = "lightgray"
+
+	let game = createGame(gameType)
+
+	let knownGame = create2dArray(gameType.width, gameType.height);
+
+	drawGame(knownGame, context); //for testing pass whole game, for gameplay pass only known game
+
+	const revealTile = () => { //reveals tile, if blank reveal tiles around it recursively
+
+	}
+
+	//for panning, add eventlistener after pointerdown if button == 2, remove on pointer up
+	//for flag, dont add after pointerup if lasted longer than 250 ms
+	canvas.addEventListener()
 
 }
 
@@ -90,7 +132,15 @@ window.addEventListener("load",() => {
 		e.currentTarget.className = "invisible";
 	})
 
-	const canvas = $("canvas");
+	canvas = $("canvas");
+
+	canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight * .91;
+
+	window.addEventListener("resize", () => {
+		canvas.width = window.innerWidth;
+		canvas.height = window.innerHeight * .91;
+	})
 
 	main(canvas);
 })
