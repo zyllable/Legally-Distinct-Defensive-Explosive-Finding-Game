@@ -13,17 +13,22 @@ body {
 	color: white;
 	width: 100vw;
 	height: 100vh;
+	position: absolute;
+	z-index: -805
 }
 canvas {
 	height: 91vh;
 	width: 100vw;
 
-	background-color: rgb(141, 141, 141);
-	
 	position: absolute;
 	left: 0;
 	bottom: 0;
-	z-index: -1
+	z-index: -1;
+
+
+	background-color: rgb(141, 141, 141);
+	
+
 }
 h1 {
 	font-size: 1.9em;
@@ -49,8 +54,16 @@ header > p {
 .invisible {
 	display: none;
 }
-#controls {
+#canvasWrapper {
+	height: 91vh;
+	width: 100vw;
 
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	z-index: -2
+}
+#controls {
 	background: #ffffff55;
 
 	position: absolute;
