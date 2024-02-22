@@ -29,6 +29,8 @@ let knownGame;
 const spriteSheet = new Image();
 spriteSheet.src = "./sprites.png";
 
+let currentGame = 0;
+
 let zoom = 1;
 let pan = false;
 let xOffset = 0;
@@ -83,10 +85,15 @@ let createGame = (game) => {
 		}
 	}
 
-	return columns;
+	return {columns: columns};
 }
 
-let drawGame = (knownGame, context) => {
+let drawGame = (knownGame, context, thisGame) => {
+
+	if (thisGame != currentGame) {
+		return;
+	}
+
 	let width = 20 * zoom;
 	context.strokeStyle = "darkgray";
 	context.fillStyle = "lightgray"
@@ -108,22 +115,38 @@ let drawGame = (knownGame, context) => {
 			}
 		}
 	}
-	requestAnimationFrame(() => {drawGame(knownGame, context)});
+	requestAnimationFrame(() => {drawGame(knownGame, context, thisGame)});
 }
 
-let playGame = (gameType, context) => {
+let playGame = (context) => {
 
-	game = createGame(gameType)
+	let startNewGame = (gameType) => {
+		game = createGame(gameType)
+		knownGame = create2dArray(gameType.width, gameType.height)
+		currentGame++
+		drawGame(knownGame, context, currentGame);
+	}
 
-	knownGame = create2dArray(gameType.width, gameType.height);
+	startNewGame(easyGame);
 
-	drawGame(knownGame, context); //for testing pass whole game, for gameplay pass only known game
+	$("#easy").addEventListener("click", () => {
+		startNewGame(easyGame);
+	})
+	$("#medium").addEventListener("click", () => {
+		startNewGame(mediumGame);
+	})
+	$("#hard").addEventListener("click", () => {
+		startNewGame(hardGame)
+	})
+	$("#custom").addEventListener("click", () => {
+		startNewGame(new Game(Number(prompt("Width")), Number(prompt("Height")), Number(prompt("Mines"))));
+	})
 
 	const revealTile = (x, y) => { //reveals tile, if blank reveal tiles around it recursively
-		if ( x < 0 || x >= game.length || y < 0 || y >= game[0].length || knownGame[x][y]) {
+		if ( x < 0 || x >= game.columns.length || y < 0 || y >= game.columns[0].length || knownGame[x][y]) {
 			return;
 		}
-		if (game[x][y] == undefined) {
+		if (game.columns[x][y] == undefined) {
 			knownGame[x][y] = -3;
 			//todo: recursively check around
 			for (let dx = -1; dx < 2; dx++) {
@@ -140,24 +163,25 @@ let playGame = (gameType, context) => {
 					revealTile(x1, y1);
 				}
 			}
-		} else if (game[x][y] == -1) {
-			for (let x1 = 0; x1 < game.length; x1++) {
-				for (let y1 = 0; y1 < game[0].length; y1++) {
-					if (!game[x1][y1]) {
+		} else if (game.columns[x][y] == -1) {
+			for (let x1 = 0; x1 < game.columns.length; x1++) {
+				for (let y1 = 0; y1 < game.columns[0].length; y1++) {
+					if (!game.columns[x1][y1]) {
 						knownGame[x1][y1] = -3;
 					} else {
-						knownGame[x1][y1] = game[x1][y1];
+						knownGame[x1][y1] = game.columns[x1][y1];
 					}
 				}
 			}
 			//if mine, reveal entire screen
 		} else {
-			knownGame[x][y] = game[x][y];
+			knownGame[x][y] = game.columns[x][y];
 		}
 	}
 
 	const placeFlag = (x, y) => {
-		if ( x < 0 || x >= game.length || y < 0 || y >= game[0].length || (knownGame[x][y] && knownGame[x][y] != 9)) {
+		console.log("A")
+		if ( x < 0 || x >= game.columns.length || y < 0 || y >= game.columns[0].length || (knownGame[x][y] && knownGame[x][y] != 9)) {
 			return;
 		}
 		if(!knownGame[x][y]) {
@@ -167,7 +191,7 @@ let playGame = (gameType, context) => {
 		}
 	}
 
-	canvas.addEventListener("pointerup", (event) => {
+	const clickToEvent = (event) => { //copied and pasted so i can remove the previous event listener
 		if (!pan) {
 			let column = Math.floor((event.clientX - xOffset) / (20 * zoom)) //inverse of column to coords
 			let row = Math.floor(((event.clientY - window.innerHeight * .09) - yOffset) / (20 * zoom))
@@ -177,7 +201,9 @@ let playGame = (gameType, context) => {
 				placeFlag(column, row);
 			}
 		}
-	})
+	}
+
+	canvas.addEventListener("pointerup", clickToEvent)
 
 }
 
@@ -245,19 +271,6 @@ window.addEventListener("load",() => {
 		}
 	});
 
-	$("#easy").addEventListener("click", () => {
-		playGame(easyGame, ctx);
-	})
-	$("#medium").addEventListener("click", () => {
-		playGame(mediumGame, ctx);
-	})
-	$("#hard").addEventListener("click", () => {
-		playGame(hardGame, ctx);
-	})
-	$("#custom").addEventListener("click", () => {
-		playGame(new Game(Number(prompt("Width")), Number(prompt("Height")), Number(prompt("Mines"))), ctx);
-	})
-
 	const ctx = canvas.getContext("2d");
-	playGame(easyGame, ctx)
+	playGame(ctx)
 })
