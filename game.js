@@ -15,7 +15,7 @@ const create2dArray = (x, y) => {
 }
 
 class Game {
-	constructor (height, width, mines) {
+	constructor (width, height, mines) {
 		this.height = height;
 		this.width = width;
 		this.mines = mines;
@@ -23,13 +23,22 @@ class Game {
 }
 
 let canvas;
+let game;
+let knownGame;
 
 const spriteSheet = new Image();
 spriteSheet.src = "./sprites.png";
 
-const easyGame = new Game(20, 20, 30);
-const mediumGame = new Game(50, 50, 80);
-const hardGame = new Game(100, 100, 200);
+let currentGame = 0;
+
+let zoom = 1;
+let pan = false;
+let xOffset = 0;
+let yOffset = 0;
+
+const easyGame = new Game(20, 20, 50);
+const mediumGame = new Game(30, 30, 150);
+const hardGame = new Game(50, 50, 700);
 
 let createGame = (game) => {
 	let columns = create2dArray(game.width, game.height);
@@ -76,54 +85,127 @@ let createGame = (game) => {
 		}
 	}
 
-	return columns;
+	return {columns: columns};
 }
 
-let drawGame = (knownGame, context) => {
-	context.clearRect(0, 0, context.width, context.height);
+let drawGame = (knownGame, context, thisGame) => {
+
+	if (thisGame != currentGame) {
+		return;
+	}
+
+	let width = 20 * zoom;
+	context.strokeStyle = "darkgray";
+	context.fillStyle = "lightgray"
+	context.clearRect(0, 0, canvas.width, canvas.height);
 	for (let column = 0; column < knownGame.length; column++) {
+		let x = column * (width) + xOffset;
+
 		for (let row = 0; row < knownGame[0].length; row++) {
-			context.strokeRect(column * 20, row * 20, 20, 20);
+			let y = row * (width) + yOffset
+
+			context.strokeRect(x, y, width, width);
 			let tile = knownGame[column][row];
 			if (!tile) {
-				context.fillRect(column * 20, row * 20, 20, 20);
+				context.fillRect(x, y, width, width);
 			} else if (tile > 0) {
-				context.drawImage(spriteSheet, (knownGame[column][row] - 1) * 256, 0, 256, 256, column * 20, row * 20, 20, 20);
+				context.drawImage(spriteSheet, (knownGame[column][row] - 1) * 256, 0, 256, 256, x, y, width, width)
 			} else if (tile == -1) {
-				context.drawImage(spriteSheet, 2304, 0, 256, 256, column * 20, row * 20, 20, 20);
+				context.drawImage(spriteSheet, 2304, 0, 256, 256, x, y, width, width)
 			}
 		}
 	}
-	requestAnimationFrame(() => {drawGame(knownGame, context)});
+	requestAnimationFrame(() => {drawGame(knownGame, context, thisGame)});
 }
 
-let playGame = (gameType, context) => {
-	context.strokeStyle = "darkgray";
-	context.fillStyle = "lightgray";
+let playGame = (context) => {
 
-	let game = createGame(gameType);
-
-	let knownGame = create2dArray(gameType.width, gameType.height);
-
-	drawGame(knownGame, context); //for testing pass whole game, for gameplay pass only known game
-
-	const revealTile = () => { //reveals tile, if blank reveal tiles around it recursively
-
+	let startNewGame = (gameType) => {
+		game = createGame(gameType)
+		knownGame = create2dArray(gameType.width, gameType.height)
+		currentGame++
+		drawGame(knownGame, context, currentGame);
 	}
 
-	//for panning, add eventlistener after pointerdown if button == 2, remove on pointer up
-	//for flag, dont add after pointerup if lasted longer than 250 ms
-	canvas.addEventListener();
+	startNewGame(easyGame);
+
+	$("#easy").addEventListener("click", () => {
+		startNewGame(easyGame);
+	})
+	$("#medium").addEventListener("click", () => {
+		startNewGame(mediumGame);
+	})
+	$("#hard").addEventListener("click", () => {
+		startNewGame(hardGame)
+	})
+	$("#custom").addEventListener("click", () => {
+		startNewGame(new Game(Number(prompt("Width")), Number(prompt("Height")), Number(prompt("Mines"))));
+	})
+
+	const revealTile = (x, y) => { //reveals tile, if blank reveal tiles around it recursively
+		if ( x < 0 || x >= game.columns.length || y < 0 || y >= game.columns[0].length || knownGame[x][y]) {
+			return;
+		}
+		if (game.columns[x][y] == undefined) {
+			knownGame[x][y] = -3;
+			//todo: recursively check around
+			for (let dx = -1; dx < 2; dx++) {
+				let x1 = x + dx;
+				if (x1 == -1 || x1 == game.width) {
+					continue;
+				}
+
+				for (let dy = -1; dy < 2; dy++) {
+					let y1 = y + dy;
+					if (y1 == -1 || y1 == game.height) {
+						continue;
+					}
+					revealTile(x1, y1);
+				}
+			}
+		} else if (game.columns[x][y] == -1) {
+			for (let x1 = 0; x1 < game.columns.length; x1++) {
+				for (let y1 = 0; y1 < game.columns[0].length; y1++) {
+					if (!game.columns[x1][y1]) {
+						knownGame[x1][y1] = -3;
+					} else {
+						knownGame[x1][y1] = game.columns[x1][y1];
+					}
+				}
+			}
+			//if mine, reveal entire screen
+		} else {
+			knownGame[x][y] = game.columns[x][y];
+		}
+	}
+
+	const placeFlag = (x, y) => {
+		console.log("A")
+		if ( x < 0 || x >= game.columns.length || y < 0 || y >= game.columns[0].length || (knownGame[x][y] && knownGame[x][y] != 9)) {
+			return;
+		}
+		if(!knownGame[x][y]) {
+			knownGame[x][y] = 9;
+		} else if (knownGame[x][y] == 9) {
+			knownGame[x][y] = undefined;
+		}
+	}
+
+	const clickToEvent = (event) => { //copied and pasted so i can remove the previous event listener
+		if (!pan) {
+			let column = Math.floor((event.clientX - xOffset) / (20 * zoom)) //inverse of column to coords
+			let row = Math.floor(((event.clientY - window.innerHeight * .09) - yOffset) / (20 * zoom))
+			if (event.button == 0) {
+				revealTile(column, row);
+			} else if (event.button == 2) {
+				placeFlag(column, row);
+			}
+		}
+	}
+
+	canvas.addEventListener("pointerup", clickToEvent)
 
 }
-
-let main = (canvas) => {
-	let currentGame = easyGame;
-	const ctx = canvas.getContext("2d");
-	playGame(currentGame, ctx)
-}
-
-
 
 let $ = element => document.querySelector(element);
 
@@ -132,7 +214,7 @@ window.addEventListener("load", () => {
 		e.currentTarget.className = "invisible";
 	})
 
-	canvas = $("canvas");
+	canvas = $("#theCanvas");
 
 	canvas.width = window.innerWidth;
 	canvas.height = window.innerHeight * .91;
@@ -142,5 +224,53 @@ window.addEventListener("load", () => {
 		canvas.height = window.innerHeight * .91;
 	})
 
-	main(canvas);
-});
+	//let pan = false;
+	let panTimeout;
+
+	let prevX = 0;
+	let prevY = 0;
+
+	canvas.addEventListener("contextmenu", (event) => {
+		event.preventDefault();
+	})
+
+	canvas.addEventListener("pointerdown", (event) => {
+		prevX = event.clientX;
+		prevY = event.clientY;
+		if (event.button == 0) {
+			panTimeout = setTimeout(() => {pan = true}, 250);
+		}
+	});
+
+	canvas.addEventListener("pointerup", (event) => {
+		setTimeout(() => { //delays to next event loop so revealing tiles doesnt get fired as well
+			if (event.button == 0) {
+				clearTimeout(panTimeout);
+				pan = false;
+			}
+		}, 1)
+	});
+
+
+
+	canvas.addEventListener("pointermove", (event) => {
+		if (pan == true) {
+			xOffset += event.clientX - prevX;
+			yOffset += event.clientY - prevY;
+			prevX = event.clientX;
+			prevY = event.clientY;
+		}
+	});
+
+	window.addEventListener("keydown", (event) => {
+		if (event.code == "Equal") {
+			zoom *= (4/3);
+		}
+		if (event.code == "Minus") {
+			zoom *= .75;
+		}
+	});
+
+	const ctx = canvas.getContext("2d");
+	playGame(ctx)
+})

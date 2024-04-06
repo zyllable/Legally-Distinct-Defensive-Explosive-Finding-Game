@@ -14,21 +14,22 @@
 			<p id="hard" class="control">Hard</p>
 			<p id="medium" class="control">Medium</p>
 			<p id="easy" class="control">Easy</p>
-			<p id="restart" class="control">Restart</p>
 		</header>
 		<div id="controls">
 			<h2>Controls (click to close)</h2>
 			<ul>
 				<li>Check spot - Left Click</li>
-				<li>Place Marker - Right Click or (ctrl + Left Click)</li>
-				<li>Zoom in - (ctrl + =) or Scroll Up</li>
-				<li>Zoom out - (ctrl + -) or Scroll Down</li>
-				<li>Pan - hold Right Click</li>
+				<li>Place Marker - Right Click</li>
+				<li>Zoom in - +/=</li>
+				<li>Zoom out - -/_</li>
+				<li>Pan - hold Left Click</li>
 			</ul>
 		</div>
-		<canvas>
-			Your browser has JavaScript disabled or does not support the Canvas API.
-		</canvas>
+		<div id="canvasWrapper">
+			<canvas id="theCanvas">
+				Your browser has JavaScript disabled or does not support the Canvas API.
+			</canvas>
+		</div>
 		<script src="game.js"></script>
 	</body>
 </html>
