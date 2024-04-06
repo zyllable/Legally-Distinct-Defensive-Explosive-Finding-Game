@@ -7,7 +7,7 @@ const getRandomInt = (max, min = 0) => {
 	return Math.round(Math.random() * delta + min);
 }
 const create2dArray = (x, y) => {
-	let array = []
+	let array = [];
 	for (let i = 0; i < x; i++) {
 		array.push(new Array(y));
 	}
@@ -32,10 +32,10 @@ const mediumGame = new Game(50, 50, 80);
 const hardGame = new Game(100, 100, 200);
 
 let createGame = (game) => {
-	let columns = create2dArray(game.width, game.height)
+	let columns = create2dArray(game.width, game.height);
 
 	//lay mines
-	let i = 0
+	let i = 0;
 	while (i < game.mines) {
 		let x = getRandomInt(game.width - 1);
 		let y = getRandomInt(game.height - 1);
@@ -47,9 +47,9 @@ let createGame = (game) => {
 
 	//count numbers
 	for (let column in columns) {
-		column = Number(column)
+		column = Number(column);
 		for (let row in columns) {
-			row = Number(row)
+			row = Number(row);
 			if (columns[column][row] == -1) {
 				for (let dx = -1; dx < 2; dx++) {
 					let x = column + dx;
@@ -88,9 +88,9 @@ let drawGame = (knownGame, context) => {
 			if (!tile) {
 				context.fillRect(column * 20, row * 20, 20, 20);
 			} else if (tile > 0) {
-				context.drawImage(spriteSheet, (knownGame[column][row] - 1) * 256, 0, 256, 256, column * 20, row * 20, 20, 20)
+				context.drawImage(spriteSheet, (knownGame[column][row] - 1) * 256, 0, 256, 256, column * 20, row * 20, 20, 20);
 			} else if (tile == -1) {
-				context.drawImage(spriteSheet, 2304, 0, 256, 256, column * 20, row * 20, 20, 20)
+				context.drawImage(spriteSheet, 2304, 0, 256, 256, column * 20, row * 20, 20, 20);
 			}
 		}
 	}
@@ -99,9 +99,9 @@ let drawGame = (knownGame, context) => {
 
 let playGame = (gameType, context) => {
 	context.strokeStyle = "darkgray";
-	context.fillStyle = "lightgray"
+	context.fillStyle = "lightgray";
 
-	let game = createGame(gameType)
+	let game = createGame(gameType);
 
 	let knownGame = create2dArray(gameType.width, gameType.height);
 
@@ -113,7 +113,7 @@ let playGame = (gameType, context) => {
 
 	//for panning, add eventlistener after pointerdown if button == 2, remove on pointer up
 	//for flag, dont add after pointerup if lasted longer than 250 ms
-	canvas.addEventListener()
+	canvas.addEventListener();
 
 }
 
@@ -127,7 +127,7 @@ let main = (canvas) => {
 
 let $ = element => document.querySelector(element);
 
-window.addEventListener("load",() => {
+window.addEventListener("load", () => {
 	$("#controls").addEventListener("click", (e) => {
 		e.currentTarget.className = "invisible";
 	})
@@ -135,7 +135,7 @@ window.addEventListener("load",() => {
 	canvas = $("canvas");
 
 	canvas.width = window.innerWidth;
-		canvas.height = window.innerHeight * .91;
+	canvas.height = window.innerHeight * .91;
 
 	window.addEventListener("resize", () => {
 		canvas.width = window.innerWidth;
@@ -143,4 +143,4 @@ window.addEventListener("load",() => {
 	})
 
 	main(canvas);
-})
+});
